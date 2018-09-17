@@ -4,7 +4,7 @@ echo "Updating packages..."
 sudo apt-get update
 sudo apt-get -y upgrade
 sudo apt-get -y install tmux build-essential gcc g++ make binutils software-properties-common \
-    python python-dev python-pip
+    python python-dev python-pip python-virtualenv
 
 echo "Checking for CUDA and installing..."
 if ! dpkg-query -W cuda-8-0; then
@@ -16,9 +16,15 @@ if ! dpkg-query -W cuda-8-0; then
     nvidia-smi
 fi
 
-echo "Installing and configuring Jupyter Notebook..."
-if [ ! -f "/root/.jupyter/jupyter_notebook_config.py" ]; then
+echo "Create Python virtualenv..."
+if [ ! -d "venv" ]; then
+    virtualenv venv
+    source venv/bin/activate
     pip install jupyter
+fi
+
+echo "Configuring Jupyter Notebook..."
+if [ ! -f "/root/.jupyter/jupyter_notebook_config.py" ]; then
     jupyter notebook --generate-config
     JUPYTER_PW=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/jupyter-pw" -H "Metadata-Flavor: Google")
     JUPYTER_PW_HASH=$(python -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PW'))")
