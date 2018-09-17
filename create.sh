@@ -1,15 +1,18 @@
 #!/bin/bash
 
 JUPYTER_PW=${JUPYTER_PW:-password}
+JUPYTER_RULE=$(gcloud compute firewall-rules list --filter "NAME=jupyter" --format "table(name)")
 
-gcloud compute firewall-rules create "jupyter" \
-    --action ALLOW \
-    --rules tcp:8888 \
-    --direction "INGRESS" \
-    --priority "1000" \
-    --network "default" \
-    --source-ranges "0.0.0.0/0" \
-    --target-tags "jupyter"
+if [ -z "$JUPYTER_RULE" ]; then
+    gcloud compute firewall-rules create "jupyter" \
+        --action ALLOW \
+        --rules tcp:8888 \
+        --direction "INGRESS" \
+        --priority "1000" \
+        --network "default" \
+        --source-ranges "0.0.0.0/0" \
+        --target-tags "jupyter"
+fi
 
 gcloud beta compute instances create "deep-learning" \
     --machine-type "n1-standard-2" \
