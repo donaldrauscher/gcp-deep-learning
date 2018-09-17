@@ -21,27 +21,36 @@ if [ ! -f "setup_complete" ]; then
     sudo modprobe nvidia
     nvidia-smi
 
+    echo "Creating new user for Python/Jupyter..."
+    JUPYTER_PW=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/jupyter-pw" -H "Metadata-Flavor: Google")
+    sudo useradd -m jupyter -p $(openssl passwd -crypt $JUPYTER_PW)
+
     echo "Creating Python virtualenv..."
     virtualenv /opt/venv
     source /opt/venv/bin/activate
     pip install jupyter==1.0.0 tensorflow-gpu==1.10.1
 
+
     echo "Configuring Jupyter Notebook..."
-    jupyter notebook --generate-config
-    JUPYTER_PW=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/jupyter-pw" -H "Metadata-Flavor: Google")
+    jupyter notebook --generate-config --config /home/jupyter/.jupyter/jupyter_notebook_config.py
     JUPYTER_PW_HASH=$(python -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PW'))")
     echo "c.NotebookApp.password = u'"$JUPYTER_PW_HASH"'
 c.NotebookApp.ip = '*'
 c.NotebookApp.token = u''
-c.NotebookApp.allow_root = True
-c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py
+c.NotebookApp.open_browser = False" >> /home/jupyter/.jupyter/jupyter_notebook_config.py
 
     echo "Record setup completion..."
     touch "setup_complete"
+
+    sudo chown -R jupyter /opt/venv
+    sudo chown -R jupyter /home/jupyter
+
     deactivate
 
 fi
 
 echo "Starting Jupyter Notebook..."
-source /opt/venv/bin/activate
-jupyter notebook --port=8888
+export HOME=/home/jupyter
+sudo -u jupyter bash -c 'JUPYTER_RUNTIME_DIR=/home/jupyter/.jupyter/ JUPYTER_CONFIG_DIR=/home/jupyter/.jupyter/ /opt/venv/bin/jupyter notebook --port=8888' &
+
+echo "Done!"
