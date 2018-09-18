@@ -1,4 +1,4 @@
-### gcp-deep-learning
+# gcp-deep-learning
 
 Set up a GCE VM for deep learning
 
