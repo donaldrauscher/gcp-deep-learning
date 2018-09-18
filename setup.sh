@@ -30,13 +30,13 @@ if [ ! -f "setup_complete" ]; then
     source /opt/venv/bin/activate
     pip install jupyter==1.0.0 tensorflow-gpu==1.10.1
 
-
     echo "Configuring Jupyter Notebook..."
     jupyter notebook --generate-config --config /home/jupyter/.jupyter/jupyter_notebook_config.py
     JUPYTER_PW_HASH=$(python -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PW'))")
     echo "c.NotebookApp.password = u'"$JUPYTER_PW_HASH"'
 c.NotebookApp.ip = '*'
 c.NotebookApp.token = u''
+c.NotebookApp.notebook_dir = '/home/jupyter/'
 c.NotebookApp.open_browser = False" >> /home/jupyter/.jupyter/jupyter_notebook_config.py
 
     echo "Record setup completion..."
