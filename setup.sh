@@ -31,7 +31,7 @@ if [ ! -f "setup_complete" ]; then
     jupyter lab --generate-config --config /home/jupyter/.jupyter/jupyter_notebook_config.py
     JUPYTER_PW_HASH=$(python3 -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PW'))")
     echo "c.NotebookApp.password = u'"$JUPYTER_PW_HASH"'
-c.NotebookApp.ip = '*'
+c.NotebookApp.ip = '0.0.0.0'
 c.NotebookApp.token = u''
 c.NotebookApp.notebook_dir = '/home/jupyter/'
 c.NotebookApp.open_browser = False" >> /home/jupyter/.jupyter/jupyter_notebook_config.py
