@@ -5,7 +5,7 @@ if [ ! -f "setup_complete" ]; then
     echo "Updating packages..."
     sudo apt-get update
     sudo apt-get -y upgrade
-    sudo apt-get -y install tmux build-essential gcc g++ make binutils software-properties-common \
+    sudo apt-get -y install tmux build-essential gcc g++ make binutils software-properties-common libsnappy-dev unzip \
         python python-dev python-pip python-virtualenv
 
     echo "Installing CUDA..."
@@ -25,12 +25,8 @@ if [ ! -f "setup_complete" ]; then
     JUPYTER_PW=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/jupyter-pw" -H "Metadata-Flavor: Google")
     sudo useradd -m jupyter -p $(openssl passwd -crypt $JUPYTER_PW)
 
-    echo "Creating Python virtualenv..."
-    virtualenv /opt/venv
-    source /opt/venv/bin/activate
-    pip install jupyter==1.0.0 tensorflow-gpu==1.10.1
-
-    echo "Configuring Jupyter Notebook..."
+    echo "Installing and configuring Jupyter Notebook..."
+    pip install jupyter
     jupyter notebook --generate-config --config /home/jupyter/.jupyter/jupyter_notebook_config.py
     JUPYTER_PW_HASH=$(python -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PW'))")
     echo "c.NotebookApp.password = u'"$JUPYTER_PW_HASH"'
@@ -39,18 +35,17 @@ c.NotebookApp.token = u''
 c.NotebookApp.notebook_dir = '/home/jupyter/'
 c.NotebookApp.open_browser = False" >> /home/jupyter/.jupyter/jupyter_notebook_config.py
 
+    echo "Some miscellaneous setup..."
+    sudo chown -R jupyter /home/jupyter
+    rm -f /etc/boto.cfg
+
     echo "Record setup completion..."
     touch "setup_complete"
-
-    sudo chown -R jupyter /opt/venv
-    sudo chown -R jupyter /home/jupyter
-
-    deactivate
 
 fi
 
 echo "Starting Jupyter Notebook..."
 export HOME=/home/jupyter
-sudo -u jupyter bash -c 'JUPYTER_RUNTIME_DIR=/home/jupyter/.jupyter/ JUPYTER_CONFIG_DIR=/home/jupyter/.jupyter/ /opt/venv/bin/jupyter notebook --port=8888' &
+sudo -u jupyter bash -c 'JUPYTER_RUNTIME_DIR=/home/jupyter/.jupyter/ JUPYTER_CONFIG_DIR=/home/jupyter/.jupyter/ jupyter notebook --port=8888' &
 
 echo "Done!"
