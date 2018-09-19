@@ -6,7 +6,8 @@ if [ ! -f "setup_complete" ]; then
     sudo apt-get update
     sudo apt-get -y upgrade
     sudo apt-get -y install tmux build-essential gcc g++ make binutils software-properties-common libsnappy-dev unzip \
-        python python-dev python-pip python-virtualenv
+        python python-dev python-pip python-virtualenv \
+        python3 python3-dev python3-pip python3-venv
 
     echo "Installing CUDA..."
     sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
@@ -25,10 +26,10 @@ if [ ! -f "setup_complete" ]; then
     JUPYTER_PW=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/jupyter-pw" -H "Metadata-Flavor: Google")
     sudo useradd -m jupyter -p $(openssl passwd -crypt $JUPYTER_PW)
 
-    echo "Installing and configuring Jupyter Notebook..."
-    pip install jupyter
-    jupyter notebook --generate-config --config /home/jupyter/.jupyter/jupyter_notebook_config.py
-    JUPYTER_PW_HASH=$(python -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PW'))")
+    echo "Installing and configuring Jupyter Lab..."
+    pip3 install jupyterlab
+    jupyter lab --generate-config --config /home/jupyter/.jupyter/jupyter_notebook_config.py
+    JUPYTER_PW_HASH=$(python3 -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PW'))")
     echo "c.NotebookApp.password = u'"$JUPYTER_PW_HASH"'
 c.NotebookApp.ip = '*'
 c.NotebookApp.token = u''
@@ -46,6 +47,6 @@ fi
 
 echo "Starting Jupyter Notebook..."
 export HOME=/home/jupyter
-sudo -u jupyter bash -c 'JUPYTER_RUNTIME_DIR=/home/jupyter/.jupyter/ JUPYTER_CONFIG_DIR=/home/jupyter/.jupyter/ jupyter notebook --port=8888' &
+sudo -u jupyter bash -c 'JUPYTER_RUNTIME_DIR=/home/jupyter/.jupyter/ JUPYTER_CONFIG_DIR=/home/jupyter/.jupyter/ jupyter lab' &
 
 echo "Done!"
