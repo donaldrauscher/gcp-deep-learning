@@ -31,4 +31,5 @@ gcloud beta compute instances create "deep-learning" \
     --boot-disk-size "50" --boot-disk-type "pd-ssd" \
     --maintenance-policy "TERMINATE" \
     --metadata startup-script="$(cat setup.sh)",jupyter-pw="$JUPYTER_PW" \
-    --tags "jupyter"
+    --tags "jupyter" \
+    --scopes "storage-rw,cloud-platform,bigquery"
