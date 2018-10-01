@@ -32,4 +32,4 @@ gcloud beta compute instances create "deep-learning" \
     --maintenance-policy "TERMINATE" \
     --metadata startup-script="$(cat setup.sh)",jupyter-pw="$JUPYTER_PW" \
     --tags "jupyter" \
-    --scopes "storage-rw,cloud-platform,bigquery"
+    --scopes "cloud-platform"
