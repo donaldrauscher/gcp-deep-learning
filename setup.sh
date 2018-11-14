@@ -1,6 +1,8 @@
 #!/bin/bash
 
-if [ ! -f "setup_complete" ]; then
+SETUP_STATUS=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/setup-status)
+
+if [ "${SETUP_STATUS}" = "pending" ]; then
 
     echo "Updating packages..."
     sudo apt-get update
@@ -41,7 +43,8 @@ c.NotebookApp.open_browser = False" >> /home/jupyter/.jupyter/jupyter_notebook_c
     rm -f /etc/boto.cfg
 
     echo "Record setup completion..."
-    touch "setup_complete"
+    ZONE=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/zone)
+    gcloud compute instances add-metadata $(hostname) --metadata setup-status=finished --zone $ZONE
 
 fi
 
